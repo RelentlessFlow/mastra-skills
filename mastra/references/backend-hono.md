@@ -1,6 +1,6 @@
 # Hono 服务端推荐实现
 
-当前服务端集成在 `setup/index.ts`，可作为 Hono + Mastra 的参考：创建 Hono app，初始化 Mastra，按需挂自定义路由，再用 `MastraServer` 接入标准 Mastra API。
+服务端可以用 Hono + Mastra 集成：创建 Hono app，初始化 Mastra，按需挂自定义路由，再用 `MastraServer` 接入标准 Mastra API。
 
 ```ts
 export async function setupMastra() {
@@ -16,13 +16,13 @@ export async function setupMastra() {
 
   mastraServer = serve({
     fetch: app.fetch,
-    port: MASTRA_PORT,
+    port: Number(process.env.PORT ?? 4111),
   })
 }
 ```
 
 ```ts
-app.post('/api_c/chat', async ({ req }) => {
+app.post('/api/chat-ui', async ({ req }) => {
   const body = await req.json()
   const { agentId, ...params } = body
   const stream = await handleChatStream({
@@ -44,4 +44,4 @@ export function cleanMastra() {
 }
 ```
 
-注意：不要假设 `@mastra/react` 一定走 `/api_c/chat`。当前安装的 `@mastra/react@0.2.21` 通过 `@mastra/client-js` 的 agent stream 标准接口发送；`/api_c/chat` 更适合作为项目自定义 AI SDK UI-message stream 端点参考。
+注意：不要假设 `@mastra/react` 一定走自定义路由。优先确认所用版本的 `@mastra/react` / `@mastra/client-js` 行为；自定义路由更适合作为业务自有 AI SDK UI-message stream 端点参考。

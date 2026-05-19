@@ -1,6 +1,6 @@
 # 工作区与 Skills 推荐实现
 
-工作区实现可参考 `workspace/index.ts`：通过 `requestContext.__workspace__` 动态创建本地文件系统，并启用 workspace tools 和 skills。
+工作区可以通过 `requestContext.__workspace__` 动态创建文件系统，并按业务启用 workspace tools 和 skills。
 
 ```ts
 export function dynamicWorkspace(
@@ -22,7 +22,7 @@ export function dynamicWorkspace(
       filesystem,
       skills: ['./**/skills', '.chat/marketing-skills'],
       bm25: true,
-      autoIndexPaths: [WORKSPACE_CONFIG_DIR],
+      autoIndexPaths: ['.'],
       tools: {
         enabled: true,
         requireApproval: false,

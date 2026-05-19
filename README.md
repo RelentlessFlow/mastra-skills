@@ -12,7 +12,7 @@ Mastra 参考实现与开发偏好 skill。
 安装到支持 Skills standard 的 coding agent：
 
 ```bash
-pnpm dlx skills add <github-user>/mastra-skills
+pnpm dlx skills add RelentlessFlow/mastra-skills
 ```
 
 本地开发时也可以直接把 `mastra/` 目录复制到 `$CODEX_HOME/skills` 或项目 `.agents/skills` 下。

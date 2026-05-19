@@ -1,7 +1,7 @@
 interface:
   display_name: "Mastra"
-  short_description: "Mastra 参考实现与开发偏好"
-  default_prompt: "使用 $mastra 参考现有代码，实现或调整 Mastra 后端与前端 SDK 功能。"
+  short_description: "通用 Mastra 后端服务与前端聊天界面开发参考实现偏好"
+  default_prompt: "使用 $mastra 参考通用示例，实现或调整 Mastra 后端与前端 SDK 功能。"
 
 policy:
   allow_implicit_invocation: true

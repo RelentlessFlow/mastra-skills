@@ -1,6 +1,6 @@
 # Agent 推荐实现
 
-当前代码里的 `assistant` 和 `specialist` 只是业务示例，不是固定 agent 模型。轻量聊天 agent 可以少工具、小 `maxSteps`；任务型 agent 可以接入 workspace、完整 tools 和更大的 `maxSteps`。
+Agent 可以按业务拆成轻量聊天、任务执行、检索问答、数据分析等类型。轻量聊天 agent 通常少工具、小 `maxSteps`；任务型 agent 可以接入 workspace、完整 tools 和更大的 `maxSteps`。
 
 ```ts
 import { Agent } from '@mastra/core/agent'
@@ -16,8 +16,8 @@ const instructions = `
 
 export function initExampleAgent() {
   return new Agent({
-    id: 'example',
-    name: '示例模式',
+    id: 'assistant',
+    name: '助手',
     description: '按业务填写',
     instructions: dynamicInstruction(instructions),
     model: dynamicModel(),
@@ -30,9 +30,9 @@ export function initExampleAgent() {
 
 ```ts
 export function initMastra() {
-  const example = initExampleAgent()
+  const assistant = initExampleAgent()
   return new Mastra({
-    agents: { example },
+    agents: { assistant },
     storage,
   })
 }

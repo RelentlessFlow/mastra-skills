@@ -3,7 +3,6 @@
 ## 前端 SDK 概述
 
 ```ts
-import { MASTRA_PORT } from '@constants'
 import { MastraClient } from '@mastra/client-js'
 
 /** mastra 客户端实例 Hook */
@@ -11,25 +10,25 @@ export { useMastraClient } from '@mastra/react'
 
 /** mastra 客户端实例 */
 export const mastraClient = new MastraClient({
-  baseUrl: `http://localhost:${MASTRA_PORT}`,
+  baseUrl: import.meta.env.VITE_MASTRA_BASE_URL,
 })
 ```
 
 ```tsx
-<MastraReactProvider baseUrl={`http://localhost:${MASTRA_PORT}`}>
-  <App />
-</MastraReactProvider>
+import { MastraReactProvider } from '@mastra/react'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <MastraReactProvider baseUrl={import.meta.env.VITE_MASTRA_BASE_URL}>
+      {children}
+    </MastraReactProvider>
+  )
+}
 ```
 
 ## Ant Design X 组件示例
 
-推荐用 `@mastra/client-js` / `@mastra/react` 处理数据和流，用 `@ant-design/x` / `@ant-design/x-markdown` 处理聊天 UI。当前项目已有这些参考代码：
-
-- `projects/desktop/src/provider/antd.tsx`：`XProvider` 主题配置。
-- `projects/desktop/src/views/home/index/chat/history/task-list/index.tsx`：`Conversations` 历史会话列表。
-- `projects/desktop/src/views/home/index/chat/thread/message/index.tsx`：`Bubble.List`、`Actions`、`Think`、`ThoughtChain`、`Sources`。
-- `projects/desktop/src/components/z-markdown.tsx`：`XMarkdown`、`CodeHighlighter`、LaTeX 插件。
-- `projects/desktop/src/views/home/index/chat/thread/sender/index.tsx`：输入框目前是业务自定义 Tiptap，不强制改成 Ant Design X。
+推荐用 `@mastra/client-js` / `@mastra/react` 处理数据和流，用 `@ant-design/x` / `@ant-design/x-markdown` 处理聊天 UI。复杂输入框、mention、附件等可以按业务自定义，不强制全部使用 Ant Design X。
 
 ### XProvider 主题
 
@@ -39,13 +38,13 @@ import { XProvider } from '@ant-design/x'
 /**
  * Ant Design X 主题配置，继承 Ant Design 主题
  */
-export const XConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
+export function XConfigProvider({ children }: { children: React.ReactNode }) {
   return (
     <XProvider
       theme={{
         components: {
           Conversations: {
-            paddingSM: getCssVarSize('--spacing-3xs'),
+            paddingSM: 6,
             controlHeightLG: 28,
           },
         },
@@ -63,23 +62,27 @@ export const XConfigProvider: FC<{ children: React.ReactNode }> = ({ children })
 import type { ConversationsProps } from '@ant-design/x'
 import type { GetProp } from 'antd'
 import { Conversations } from '@ant-design/x'
+import { Button } from 'antd'
 
 /** 会话列表 */
 const items: GetProp<ConversationsProps, 'items'> = (threads?.threads ?? []).map(v => ({
   key: v.id,
   label: (
-    <div className={'flex gap-3xs'}>
-      <span className={'truncate flex-1'}>{v.title || 'New Thread'}</span>
-      <ZIconButton
-        className={'group-hover:visible invisible'}
-        color={'negative'}
-        icon={IconTrash}
-        size={'xs'}
+    <div style={{ display: 'flex', gap: 8 }}>
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {v.title || 'New Thread'}
+      </span>
+      <Button
+        danger
+        size={'small'}
+        type={'text'}
         onClick={(e) => {
-          e?.stopPropagation()
+          e.stopPropagation()
           deleteThread(v.id)
         }}
-      />
+      >
+        删除
+      </Button>
     </div>
   ),
   className: 'group',
@@ -90,7 +93,6 @@ return (
   <Conversations
     groupable
     activeKey={threadId}
-    className={'w-60 max-h-100'}
     items={items}
     onActiveChange={(value) => {
       selectThread(value)
@@ -105,29 +107,22 @@ return (
 ```tsx
 import type { BubbleItemType, BubbleListProps } from '@ant-design/x'
 import { Actions, Bubble, Think } from '@ant-design/x'
+import { Avatar, Spin } from 'antd'
 
 /** 角色描述 */
 const role: BubbleListProps['role'] = {
   assistant: {
     variant: 'borderless',
     loadingRender: () => (
-      <div className={'flex flex-center gap-xs'}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <Spin size={'small'} />回复中...
       </div>
     ),
-    classNames: {
-      root: 'px-4xs py-xs',
-      footer: 'mt-xs',
-    },
     footer: content => <BubbleActions content={content} />,
   },
   user: {
     placement: 'end',
-    avatar: () => <Avatar icon={<ZIcon icon={IconUser} />} size={32} />,
-    classNames: {
-      root: 'px-4xs',
-      footer: 'mt-xs',
-    },
+    avatar: () => <Avatar size={32}>U</Avatar>,
     footer: content => <BubbleActions content={content} />,
   },
 }
@@ -175,13 +170,13 @@ return (
 ### Bubble Actions
 
 ```tsx
-export const BubbleActions: FC<{ content: ReactNode }> = ({ content }) => {
+export function BubbleActions({ content }: { content: React.ReactNode }) {
   const extractContent = (): string => {
     if (!Array.isArray(content))
       return ''
 
     return content.reduce((res, v) => {
-      const element = v as ReactElement<any>
+      const element = v as React.ReactElement<any>
       const cur = element?.props?.['data-content']
       return !cur
         ? res
@@ -193,12 +188,10 @@ export const BubbleActions: FC<{ content: ReactNode }> = ({ content }) => {
     <Actions
       items={[{
         key: 'copy',
-        icon: <ZIcon icon={IconCopy} />,
         label: '复制内容',
       }]}
       onClick={() => {
         navigator.clipboard?.writeText(extractContent())
-        message.success('已复制到剪贴板')
       }}
     />
   )
@@ -215,15 +208,14 @@ import Latex from '@ant-design/x-markdown/plugins/Latex'
 import '@ant-design/x-markdown/themes/dark.css'
 import '@ant-design/x-markdown/themes/light.css'
 
-const CustomCode: FC<ComponentProps> = ({ children, className }) => {
-  const { derives: { light } } = useTheme()
+function CustomCode({ children, className }: ComponentProps) {
+  const light = true
   const lang = className?.match(/language-(\w+)/)?.[1] || ''
 
   return (
     typeof children === 'string' && (
       <CodeHighlighter
-        classNames={{ code: '[&_pre]:m-0!' }}
-        highlightProps={{ style: light ? oneLight : atomDark }}
+        highlightProps={{}}
         lang={lang}
       >
         {children}
@@ -232,8 +224,8 @@ const CustomCode: FC<ComponentProps> = ({ children, className }) => {
   )
 }
 
-export const ZMarkdown: FC<XMarkdownProps> = (props) => {
-  const { derives: { light } } = useTheme()
+export function MarkdownMessage(props: XMarkdownProps) {
+  const light = true
 
   return (
     <XMarkdown
@@ -267,10 +259,7 @@ const { messages } = await mastraClient.listThreadMessages(threadId, { agentId }
 ```ts
 export async function mastraGetAgents() {
   const agentsRecord = await mastraClient.listAgents()
-  return Object.values(agentsRecord).map(agent => ({
-    ...agent,
-    icon: iconMap[agent.id],
-  }))
+  return Object.values(agentsRecord)
 }
 ```
 
@@ -324,7 +313,7 @@ function onCancel() {
 
 ```ts
 const $http = axios.create({
-  baseURL: `http://localhost:${MASTRA_PORT}`,
+  baseURL: import.meta.env.VITE_MASTRA_BASE_URL,
 })
 
 export async function mastraGetAgentsByHttp() {
@@ -341,6 +330,6 @@ export async function mastraChatByHttp(params: {
   resourceId?: string
   requestContext?: RequestContext
 }) {
-  return $http.post('/api_c/chat', params)
+  return $http.post('/api/chat-ui', params)
 }
 ```
