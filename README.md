@@ -15,4 +15,22 @@ Mastra 参考实现与开发偏好 skill。
 pnpm dlx skills add RelentlessFlow/mastra-skills
 ```
 
+只安装 `mastra` 这个 skill：
+
+```bash
+pnpm dlx skills add RelentlessFlow/mastra-skills --skill mastra
+```
+
+安装到全局用户目录：
+
+```bash
+pnpm dlx skills add RelentlessFlow/mastra-skills -g
+```
+
+安装仓库内所有 skills 到所有支持的 agent：
+
+```bash
+pnpm dlx skills add RelentlessFlow/mastra-skills --all
+```
+
 本地开发时也可以直接把 `mastra/` 目录复制到 `$CODEX_HOME/skills` 或项目 `.agents/skills` 下。
